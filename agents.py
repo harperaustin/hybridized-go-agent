@@ -495,13 +495,13 @@ class ValueNetwork(nn.Module):
         output of network
       """
       z1 = self.layer1(x)
-      a1 = self.sigmoid(z1)
+      a1 = torch.relu(z1)
       z2 = self.layer2(a1)
-      a2 = torch.relu(z2)
+      a2 = self.sigmoid(z2)
       z3 = self.layer3(a2)
-      a3 = self.tanh(z3)
+      a3 = torch.relu(z3)
       z4 = self.layer4(a3)
-      output = self.tanh(z4)
+      output = self.sigmoid(z4)
       return output
     
 
