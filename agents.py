@@ -555,7 +555,7 @@ class GoProblemLearnedHeuristic(GoProblem):
     
 def create_value_agent_from_model():
     model_path = "value_model.pt"
-    feature_size = 51
+    feature_size = 53
     model = load_model(model_path, ValueNetwork(feature_size))
     heuristic_search_problem = GoProblemLearnedHeuristic(model)
     learned_agent = GreedyAgent(heuristic_search_problem)
