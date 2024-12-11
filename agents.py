@@ -473,14 +473,14 @@ class ValueNetwork(nn.Module):
     def __init__(self, input_size):
       super(ValueNetwork, self).__init__()
 
-       # output size should be 1, as we are predicting a value in between [-1,1]
+      # output size should be 1, as we are predicting a value in between [-1,1]
       output_size = 1
 
       # add more layers
       self.layer1 = nn.Linear(input_size, 64)
       self.layer2 = nn.Linear(64, 32)
-      self.layer3 = nn.Linear(32, 8)
-      self.layer4 = nn.Linear(8, output_size)
+      self.layer3 = nn.Linear(32, 10)
+      self.layer4 = nn.Linear(10, output_size)
       
       self.tanh = nn.Tanh()
       self.sigmoid = nn.Sigmoid()
@@ -565,15 +565,25 @@ class PolicyNetwork(nn.Module):
     def __init__(self, input_size, board_size=5):
       super(PolicyNetwork, self).__init__()
 
-      # TODO: What should the output size of the Policy be?
-      output_size = 0
+      output_size = (board_size * board_size) + 1
 
-      # TODO: Add more layers, non-linear functions, etc.
-      self.linear = nn.Linear(input_size, output_size)
+      self.layer1 = nn.Linear(input_size, 128)
+      self.layer2 = nn.Linear(128, 64)
+      self.layer3 = nn.Linear(64, 32)
+      self.layer4 = nn.Linear(32, output_size)
+      self.tanh = nn.Tanh()
+      self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-      # TODO: Update as more layers are added
-      return self.linear(x)
+        z1 = self.layer1(x)
+        a1 = self.tanh(z1)
+        z2 = self.layer2(a1)
+        a2 = self.tanh(z2)
+        z3 = self.layer3(a2)
+        a3 = torch.relu(z3)
+        z4 = self.layer4(a3)
+        output = self.sigmoid(z4)
+        return output
   
 def get_features(game_state: GoState):
     """
@@ -621,10 +631,7 @@ class PolicyAgent(GameAgent):
         self.board_size = board_size
 
     def encoding(self, state):
-        # TODO: get encoding of state (convert state to features)
-        features = []
-
-        return features
+        return get_features(state)
 
     def get_move(self, game_state, time_limit=1):
       """
@@ -637,10 +644,20 @@ class PolicyAgent(GameAgent):
         action: best action to take
       """
 
-      # TODO: Select LEGAL Best Action predicted by model
-      # The top prediction of your model may not be a legal move!
-      action = random.choice(self.search_problem.get_available_actions(game_state))
-
+      features_tensor = torch.tensor(self.encoding(game_state), dtype=torch.float32)
+      model_output = self.model(features_tensor)
+      legal_actions = self.search_problem.get_available_actions(game_state)
+      #print(legal_actions)
+      for i in range(len(model_output)):
+          if i not in legal_actions:
+              model_output[i] = float('-inf')
+      # get best legal action
+      action = torch.argmax(model_output).item()
+      # if the selected action is to pass, but there are other options, choose other options
+      if action == 25 and len(legal_actions) > 1:
+          legal_actions.remove(25)
+          action = legal_actions[torch.argmax(model_output[legal_actions])]
+      #print(action)
       # Note, you may want to force your policy not to pass their turn unless necessary
       assert action in self.search_problem.get_available_actions(game_state)
       
