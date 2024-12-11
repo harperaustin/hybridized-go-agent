@@ -607,14 +607,20 @@ def get_features(game_state: GoState):
     features = []
     # for first 25 features, use just a 1 or 0 to indicate if a black piece is in the slot
     black_player_pieces = game_state.get_pieces_array(0)
+    black_total_pieces = sum(sum(black_player_pieces))
     for row in black_player_pieces:
         for piece in row:
             features.append(piece)
     # for second 25 features, use just a 1 or 0 to indicate if a white piece is in the slot
     white_player_pieces = game_state.get_pieces_array(1)
+    white_total_pieces = sum(sum(white_player_pieces))
     for row in white_player_pieces:
         for piece in row:
             features.append(piece)
+            
+    # add total number of pieces
+    features.append(black_total_pieces)
+    features.append(white_total_pieces)
     # finally append the player to move
     features.append(game_state.player_to_move())
 
