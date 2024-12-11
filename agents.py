@@ -569,21 +569,21 @@ class PolicyNetwork(nn.Module):
 
       self.layer1 = nn.Linear(input_size, 64)
       self.layer2 = nn.Linear(64, 32)
-      self.layer3 = nn.Linear(32, 64)
-      self.layer4 = nn.Linear(64, output_size)
+      self.layer3 = nn.Linear(32, 32)
+      self.layer4 = nn.Linear(32, output_size)
       self.tanh = nn.Tanh()
       self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        z1 = self.layer1(x)
-        a1 = self.tanh(z1)
-        z2 = self.layer2(a1)
-        a2 = self.tanh(z2)
-        z3 = self.layer3(a2)
-        a3 = torch.relu(z3)
-        z4 = self.layer4(a3)
-        output = self.sigmoid(z4)
-        return output
+      z1 = self.layer1(x)
+      a1 = self.tanh(z1)
+      z2 = self.layer2(a1)
+      a2 = torch.relu(z2)
+      z3 = self.layer3(a2)
+      a3 = torch.relu(z3)
+      z4 = self.layer4(a3)
+      output = self.sigmoid(z4)
+      return output
   
 def get_features(game_state: GoState):
     """
