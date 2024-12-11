@@ -672,6 +672,7 @@ class PolicyAgent(GameAgent):
     def __str__(self) -> str:
         return "Policy Agent"
     
+
 def create_policy_agent_from_model():
     """
     Create agent object from saved model. This (or other methods like this) will be how your agents will be created in gradescope and in the final tournament.    
@@ -681,12 +682,167 @@ def create_policy_agent_from_model():
     agent = PolicyAgent(GoProblem(size=5), model_path)
     return agent
 
+class CustomNetwork(nn.Module):
+    def __init__(self, input_size):
+      super(CustomNetwork, self).__init__()
+
+      # output size should be 1, as we are predicting a value in between [-1,1]
+      output_size = 1
+
+      # add more layers
+      self.layer1 = nn.Linear(input_size, 64)
+      self.layer2 = nn.Linear(64, 32)
+      self.layer3 = nn.Linear(32, 10)
+      self.layer4 = nn.Linear(10, output_size)
+      
+      self.tanh = nn.Tanh()
+      self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+      """
+      Run forward pass of network
+
+      Input:
+        x: input to network
+      Output:
+        output of network
+      """
+      z1 = self.layer1(x)
+      a1 = torch.relu(z1)
+      z2 = self.layer2(a1)
+      a2 = self.sigmoid(z2)
+      z3 = self.layer3(a2)
+      a3 = torch.relu(z3)
+      z4 = self.layer4(a3)
+      output = self.sigmoid(z4)
+      return output
+    
+class CustomAgent(GameAgent):
+    def __init__(self, search_problem, model_path, board_size=5):
+        super().__init__()
+        self.search_problem = search_problem
+        self.model = load_model(model_path, PolicyNetwork(53, 5)) #CHANGE POLICY NETWORK TO MY OWN NETWORK
+        self.board_size = board_size
+
+    def encoding(self, state):
+        return get_features(state)
+
+    def get_move(self, game_state, time_limit=1):
+      """
+      Get best action for current state using self.model
+
+      Input:
+        game_state: current state of the game
+        time_limit: time limit for search (This won't be used in this agent)
+      Output:
+        action: best action to take
+      """
+
+      # idea here is to first check if the state is an opening move state, if so, just pull
+      # move straight from that stored book
+      action = 1
+      return action
+    
+    def __str__(self) -> str:
+        return "Merp Agent"
+    
+def get_features_advanced(game_state: GoState):
+    """
+    Map a game state to a list of features.
+
+    Some useful functions from game_state include:
+        game_state.size: size of the board
+        get_pieces_coordinates(player_index): get coordinates of all pieces of a player (0 or 1)
+        get_pieces_array(player_index): get a 2D array of pieces of a player (0 or 1)
+        
+        get_board(): get a 2D array of the board with 4 channels (player 0, player 1, empty, and player to move). 4 channels means the array will be of size 4 x n x n
+    
+        Descriptions of these methods can be found in the GoState
+
+    Input:
+        game_state: GoState to encode into a fixed size list of features
+    Output:
+        features: list of features
+    """
+    board_size = game_state.size
+    features = []
+    # for first 25 features, use just a 1 or 0 to indicate if a black piece is in the slot
+    black_player_pieces = game_state.get_pieces_array(0)
+    black_total_pieces = sum(sum(black_player_pieces))
+    for row in black_player_pieces:
+        for piece in row:
+            features.append(piece)
+    # for second 25 features, use just a 1 or 0 to indicate if a white piece is in the slot
+    white_player_pieces = game_state.get_pieces_array(1)
+    white_total_pieces = sum(sum(white_player_pieces))
+    for row in white_player_pieces:
+        for piece in row:
+            features.append(piece)
+            
+    # add total number of pieces
+    features.append(black_total_pieces)
+    features.append(white_total_pieces)
+    # finally append the player to move
+    features.append(game_state.player_to_move())
+
+    # loop through all of the black pieces
+    for i in range(len(black_player_pieces)):
+        for j in range(len(black_player_pieces[0])):
+            # initialize a value for the adjacent piece being either same color, opponent, or empty
+            # need to check for every piece regardless 
+            adjacent_black_count = 0
+            adjacent_white_count = 0
+            adjacent_empty_count = 0
+
+            # check below current piece
+            new_i = i + 1
+            if new_i >= 0 and new_i < 5:
+                adjacent_black_count += black_player_pieces[new_i][j]
+                adjacent_white_count += white_player_pieces[new_i][j]
+                if black_player_pieces[new_i][j] == 0 and white_player_pieces[new_i][j] == 0:
+                    adjacent_empty_count += 1
+
+            # check above the current piece
+            new_i = i - 1
+            if new_i >= 0 and new_i < 5:
+                adjacent_black_count += black_player_pieces[new_i][j]
+                adjacent_white_count += white_player_pieces[new_i][j]
+                if black_player_pieces[new_i][j] == 0 and white_player_pieces[new_i][j] == 0:
+                    adjacent_empty_count += 1
+
+             # check to the right of the current piece
+            new_j = j + 1
+            if new_j >= 0 and new_j < 5:
+                adjacent_black_count += black_player_pieces[i][new_j]
+                adjacent_white_count += white_player_pieces[i][new_j]
+                if black_player_pieces[i][new_j] == 0 and white_player_pieces[i][new_j] == 0:
+                    adjacent_empty_count += 1
+
+             # check to the left of current piece
+            new_j = j - 1
+            if new_j >= 0 and new_j < 5:
+                adjacent_black_count += black_player_pieces[i][new_j]
+                adjacent_white_count += white_player_pieces[i][new_j]
+                if black_player_pieces[i][new_j] == 0 and white_player_pieces[i][new_j] == 0:
+                    adjacent_empty_count += 1
+            # for each tile, add a feature indicating how many adjacent pieces are white and another for how many are black and another for empty
+            # (divide by 4 to normalize the value, as we are checking 4 total adjacent squares)
+            features.append(adjacent_black_count/4)
+            features.append(adjacent_white_count/4)
+            features.append(adjacent_empty_count/4)
+
+
+    return features
+
+    
+    
+
 def main():
     from game_runner import run_many
-    agent1 = create_value_agent_from_model()
-    agent2 = create_policy_agent_from_model()
+    agent1 = IterativeDeepeningAgent()
+    agent2 = AlphaBetaAgent(depth=3)
     # Play 10 games
-    run_many(agent1, agent2, 100)
+    run_many(agent1, agent2, 10)
 
 
 if __name__ == "__main__":
