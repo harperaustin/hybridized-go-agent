@@ -567,10 +567,10 @@ class PolicyNetwork(nn.Module):
 
       output_size = (board_size * board_size) + 1
 
-      self.layer1 = nn.Linear(input_size, 128)
-      self.layer2 = nn.Linear(128, 64)
-      self.layer3 = nn.Linear(64, 32)
-      self.layer4 = nn.Linear(32, output_size)
+      self.layer1 = nn.Linear(input_size, 64)
+      self.layer2 = nn.Linear(64, 32)
+      self.layer3 = nn.Linear(32, 64)
+      self.layer4 = nn.Linear(64, output_size)
       self.tanh = nn.Tanh()
       self.sigmoid = nn.Sigmoid()
 
