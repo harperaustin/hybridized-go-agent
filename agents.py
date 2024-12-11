@@ -671,13 +671,22 @@ class PolicyAgent(GameAgent):
 
     def __str__(self) -> str:
         return "Policy Agent"
+    
+def create_policy_agent_from_model():
+    """
+    Create agent object from saved model. This (or other methods like this) will be how your agents will be created in gradescope and in the final tournament.    
+    """
+
+    model_path = "policy_model.pt"
+    agent = PolicyAgent(GoProblem(size=5), model_path)
+    return agent
 
 def main():
     from game_runner import run_many
-    agent1 = GreedyAgent()
-    agent2 = MCTSAgent()
+    agent1 = create_value_agent_from_model()
+    agent2 = create_policy_agent_from_model()
     # Play 10 games
-    run_many(agent1, agent2, 10)
+    run_many(agent1, agent2, 100)
 
 
 if __name__ == "__main__":
