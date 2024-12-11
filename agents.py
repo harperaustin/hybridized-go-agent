@@ -627,7 +627,7 @@ class PolicyAgent(GameAgent):
     def __init__(self, search_problem, model_path, board_size=5):
         super().__init__()
         self.search_problem = search_problem
-        self.model = load_model(model_path, PolicyNetwork)
+        self.model = load_model(model_path, PolicyNetwork(53, 5))
         self.board_size = board_size
 
     def encoding(self, state):
