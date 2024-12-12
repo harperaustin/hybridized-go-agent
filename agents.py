@@ -334,7 +334,7 @@ class MCTSAgent(GameAgent):
         """
         start_time = time.time()
         node = MCTSNode(game_state)
-        while time.time() - start_time  < time_limit - 0.05:
+        while time.time() - start_time  < time_limit - 0.1:
             # select a node using policy
             leaf = self.select(node)
             # expand that nodes and get children
@@ -690,13 +690,17 @@ class CustomNetwork(nn.Module):
       output_size = 1
 
       # add more layers
-      self.layer1 = nn.Linear(input_size, 64)
+      self.layer1 = nn.Linear(input_size,64)
       self.layer2 = nn.Linear(64, 32)
       self.layer3 = nn.Linear(32, 10)
       self.layer4 = nn.Linear(10, output_size)
+      # self.layer5 = nn.Linear(16,8)
+      # self.layer6 = nn.Linear(8,output_size)
       
+      # self.dropout = nn.Dropout(0.2)
       self.tanh = nn.Tanh()
       self.sigmoid = nn.Sigmoid()
+
 
     def forward(self, x):
       """
@@ -707,44 +711,82 @@ class CustomNetwork(nn.Module):
       Output:
         output of network
       """
+      # relu, tanh, relu, sigmoid
       z1 = self.layer1(x)
       a1 = torch.relu(z1)
+
+
       z2 = self.layer2(a1)
-      a2 = self.sigmoid(z2)
+      a2 = torch.tanh(z2)
+
+
       z3 = self.layer3(a2)
       a3 = torch.relu(z3)
+
+
       z4 = self.layer4(a3)
+
+
+
       output = self.sigmoid(z4)
       return output
     
-class CustomAgent(GameAgent):
-    def __init__(self, search_problem, model_path, board_size=5):
-        super().__init__()
-        self.search_problem = search_problem
-        self.model = load_model(model_path, PolicyNetwork(53, 5)) #CHANGE POLICY NETWORK TO MY OWN NETWORK
-        self.board_size = board_size
+class GoProblemCustomHeuristic(GoProblem):
+    def __init__(self, model=None, state=None):
+        super().__init__(state=state)
+        self.model = model
+        
+    def __call__(self, model=None):
+        """
+        Use the model to compute a heuristic value for a given state.
+        """
+        return self
 
     def encoding(self, state):
-        return get_features(state)
+        """
+        Get encoding of state (convert state to features)
+        Note, this may call get_features() from Task 1. 
 
-    def get_move(self, game_state, time_limit=1):
-      """
-      Get best action for current state using self.model
+        Input:
+            state: GoState to encode into a fixed size list of features
+        Output:
+            features: list of features
+        """
+        return get_features_advanced(state)
 
-      Input:
-        game_state: current state of the game
-        time_limit: time limit for search (This won't be used in this agent)
-      Output:
-        action: best action to take
-      """
+    def heuristic(self, state, player_index):
+        """
+        Return heuristic (value) of current state
 
-      # idea here is to first check if the state is an opening move state, if so, just pull
-      # move straight from that stored book
-      action = 1
-      return action
-    
+        Input:
+            state: GoState to encode into a fixed size list of features
+            player_index: index of player to evaluate heuristic for
+        Output:
+            value: heuristic (value) of current state
+        """
+        
+        value = 0
+        # get encoding for the state:
+        state_encoding = self.encoding(state)
+        features_tensor = torch.Tensor(state_encoding)
+        value = self.model(features_tensor)
+        # create heuristic value based on this state
+        # use return value you get from value Network
+        
+        # Note, your agent may perform better if you force it not to pass
+        # (i.e., don't select action #25 on a 5x5 board unless necessary)
+        return value
+
     def __str__(self) -> str:
         return "Merp Agent"
+
+def create_custom_agent_from_model():
+    model_path = "custom_model.pt"
+    feature_size = 103
+    model = load_model(model_path, CustomNetwork(feature_size))
+    heuristic_search_problem = GoProblemCustomHeuristic(model)
+    learned_agent = GreedyAgent(heuristic_search_problem)
+    return learned_agent
     
 def get_features_advanced(game_state: GoState):
     """
@@ -829,7 +871,7 @@ def get_features_advanced(game_state: GoState):
             # (divide by 4 to normalize the value, as we are checking 4 total adjacent squares)
             features.append(adjacent_black_count/4)
             features.append(adjacent_white_count/4)
-            features.append(adjacent_empty_count/4)
+            #features.append(adjacent_empty_count/4)
 
 
     return features
@@ -839,10 +881,11 @@ def get_features_advanced(game_state: GoState):
 
 def main():
     from game_runner import run_many
-    agent1 = IterativeDeepeningAgent()
-    agent2 = AlphaBetaAgent(depth=3)
+    agent1 = create_value_agent_from_model()
+    agent2 = create_custom_agent_from_model()
+    
     # Play 10 games
-    run_many(agent1, agent2, 10)
+    run_many(agent1, agent2, 40)
 
 
 if __name__ == "__main__":
