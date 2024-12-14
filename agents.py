@@ -1027,8 +1027,7 @@ class HybridAgent(GameAgent):
         self.search_problem = search_problem
         self.learned_problem = learned_problem
         self.ab_agent = AlphaBetaAgentDiff(depth=depth)
-        self.value_agent = create_value_agent_from_model()
-        self.num_moves = 0
+        self.value_agent = create_custom_agent_from_model()
 
     def get_move(self, game_state: GoState, time_limit: float) -> Action:
         """
@@ -1040,8 +1039,8 @@ class HybridAgent(GameAgent):
             game_state (GameState): current game state
             time_limit (float): time limit for agent to return a move
         """
-        self.num_moves += 1
-        # CHECK FOR TIME CONSTRAINTS
+       
+        num_pieces = len(game_state.get_pieces_coordinates(BLACK)) + len(game_state.get_pieces_coordinates(WHITE))
 
         def get_move_ab():
             return self.ab_agent.get_move(game_state, time_limit)
@@ -1050,7 +1049,7 @@ class HybridAgent(GameAgent):
             return self.value_agent.get_move(game_state, time_limit)
         
 
-        if self.num_moves <= 10:
+        if num_pieces <= 20:
             return get_move_value()
         else:
             return get_move_ab()
