@@ -76,7 +76,8 @@ class GoProblemMerpHeuristic(GoProblem):
             ns = [(x - 1, y), (x + 1, y), (x, y - 1), (x , y + 1)]
             return [(x, y) for x, y in ns if 0 <= x < 5 and 0 <= y < 5]
         
-
+        black_large_region_count = 0
+        white_large_region_count = 0
         # loop through every slot in the board
         for x in range(5):
             for y in range(5):
@@ -84,12 +85,16 @@ class GoProblemMerpHeuristic(GoProblem):
                 if (x,y) not in visited:
                     if board[BLACK][x][y] == 1:
                         region, liberties = flood_fill(x,y,state, BLACK)
+                        if len(region) >= 3:
+                            black_large_region_count += 1
                         black_territory += len(liberties)
                     elif board[WHITE][x][y] == 1:
                         region, liberties = flood_fill(x,y,state, WHITE)
+                        if len(region) >= 3:
+                            white_large_region_count += 1
                         white_territory += len(liberties)
-
-        return black_territory - white_territory
+        
+        return (black_territory + 2 *black_large_region_count) - (white_territory + 2 * white_large_region_count)
 
 
     def __str__(self) -> str:

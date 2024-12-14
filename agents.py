@@ -1028,9 +1028,10 @@ def main():
     from game_runner import run_many
     agent1 = AlphaBetaAgentDiff(depth=2)
     agent2 = create_value_agent_from_model()
+    #agent2 = AlphaBetaAgent(depth=2)
     
     # Play 10 games
-    run_many(agent1, agent2, 40)
+    run_many(agent1, agent2, 20)
 
 
 if __name__ == "__main__":
