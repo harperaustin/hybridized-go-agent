@@ -1021,12 +1021,56 @@ def get_features_advanced(game_state: GoState):
 
     return features
 
+class HybridAgent(GameAgent):
+    def __init__(self, search_problem=GoProblemMerpHeuristic(), learned_problem =GoProblemLearnedHeuristic(), depth=1):
+        super().__init__()
+        self.search_problem = search_problem
+        self.learned_problem = learned_problem
+        self.ab_agent = AlphaBetaAgentDiff(depth=depth)
+        self.value_agent = create_value_agent_from_model()
+        self.num_moves = 0
+
+    def get_move(self, game_state: GoState, time_limit: float) -> Action:
+        """
+        get move of agent for given game state.
+        Greedy agent looks one step ahead with the provided heuristic and chooses the best available action
+        (Greedy agent does not consider remaining time)
+
+        Args:
+            game_state (GameState): current game state
+            time_limit (float): time limit for agent to return a move
+        """
+        self.num_moves += 1
+        # CHECK FOR TIME CONSTRAINTS
+
+        def get_move_ab():
+            return self.ab_agent.get_move(game_state, time_limit)
+            
+        def get_move_value():
+            return self.value_agent.get_move(game_state, time_limit)
+        
+
+        if self.num_moves <= 10:
+            return get_move_value()
+        else:
+            return get_move_ab()
+        # if early/mid game, do value agent
+
+        # if late game, do ab
+
+    def __str__(self):
+        """
+        Description of agent (Greedy + heuristic/search problem used)
+        """
+        return "Hybrid Agent + " + str(self.search_problem)
+
     
     
 
 def main():
     from game_runner import run_many
-    agent1 = AlphaBetaAgentDiff(depth=2)
+    agent1 = HybridAgent(depth=2)
+    #agent1 = create_value_agent_from_model()
     agent2 = create_value_agent_from_model()
     #agent2 = AlphaBetaAgent(depth=2)
     
