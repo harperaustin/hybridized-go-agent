@@ -1039,10 +1039,14 @@ class HybridAgent(GameAgent):
             game_state (GameState): current game state
             time_limit (float): time limit for agent to return a move
         """
+
+        # ADD TIME CONSTRAINT:
         board = game_state.get_board()
         curr_player = game_state.player_to_move()
         opp_player = 1 - curr_player
         # def opening_book():
+
+
         def convert_board(game_state: GoState):
             # combines board information into 1 array 
             combined_board = []
@@ -1267,7 +1271,7 @@ class HybridAgent(GameAgent):
         def get_move_value():
             return self.value_agent.get_move(game_state, time_limit)
         
-        if num_pieces < 2:
+        if num_pieces < 1:
             return opening_book()
         elif num_pieces <= 17:
             return get_move_value()
@@ -1281,7 +1285,7 @@ class HybridAgent(GameAgent):
         """
         Description of agent (Greedy + heuristic/search problem used)
         """
-        return "Hybrid Agent + " + str(self.search_problem)
+        return "Hybridized Merp Agent + " + str(self.search_problem)
     
 def get_final_agent_5x5():
     return HybridAgent(depth=2)
