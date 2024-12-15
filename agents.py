@@ -1039,24 +1039,244 @@ class HybridAgent(GameAgent):
             game_state (GameState): current game state
             time_limit (float): time limit for agent to return a move
         """
+        board = game_state.get_board()
+        curr_player = game_state.player_to_move()
+        opp_player = 1 - curr_player
+        # def opening_book():
+        def convert_board(game_state: GoState):
+            # combines board information into 1 array 
+            combined_board = []
+            for i in range(5):
+                curr_row = []
+                for j in range(5):
+                    # 1's represent the current player
+                    if board[curr_player][i][j] == 1:
+                        curr_row.append(1)
+                    # 2's represent the opponent
+                    elif board[opp_player][i][j] == 1:
+                        curr_row.append(2)
+                    # 0's represent empty spaces
+                    else:
+                        curr_row.append(0)
+
+                combined_board.append(curr_row)
+            return combined_board
+        
+        def tuple_ize_board(a_combined_board):
+            return tuple(tuple(row) for row in a_combined_board)
+        
+
+        def opening_book():
+            # if playing first, simply play in the center
+            if num_pieces == 0:
+                return 12 
+            
+            if num_pieces == 1:
+                #print(convert_board(game_state))
+                # if the center point is empty, play there
+                # let's try adding further moves and see if it helps
+                if board[2][2][2] == 1:
+                    return 12
+                else:
+                # if the center point is taken, play one of the adjacent spots
+                    return random.choice([7,11,13,17])
+            
+            
+            third_move_dict = {
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,2,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 17,
+
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,2,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 11,
+
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,2,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 7,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,2,0,0],
+                    [0,0,0,0,0],
+                ]) : 13,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,2,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 7,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,2,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 7,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,2,0],
+                    [0,0,0,0,0],
+                ]) : 17,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,2,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 17,
+                tuple_ize_board([
+                    [2,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 6,
+                tuple_ize_board([
+                    [0,0,0,0,2],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 8,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,2],
+                ]) : 18,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [2,0,0,0,0],
+                ]) : 16,
+                tuple_ize_board([
+                    [0,2,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 6,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [2,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 6,
+                tuple_ize_board([
+                    [0,0,0,2,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 8,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,2],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 8,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,2],
+                    [0,0,0,0,0],
+                ]) : 18,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,2,0],
+                ]) : 18,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,2,0,0,0],
+                ]) : 16,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [2,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 16,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [2,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 11,
+                tuple_ize_board([
+                    [0,0,2,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 7,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,2],
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                ]) : 13,
+                tuple_ize_board([
+                    [0,0,0,0,0],
+                    [0,0,0,0,0],
+                    [0,0,1,0,0],
+                    [0,0,0,0,0],
+                    [0,0,2,0,0],
+                ]) : 17,
+
+
+
+            }
+            if num_pieces == 2:
+                return third_move_dict[tuple_ize_board(convert_board(game_state))]
        
         num_pieces = len(game_state.get_pieces_coordinates(BLACK)) + len(game_state.get_pieces_coordinates(WHITE))
-
         def get_move_ab():
             return self.ab_agent.get_move(game_state, time_limit)
             
         def get_move_value():
             return self.value_agent.get_move(game_state, time_limit)
         
-
-        if num_pieces <= 20:
+        if num_pieces < 2:
+            return opening_book()
+        elif num_pieces <= 17:
             return get_move_value()
         else:
             return get_move_ab()
         # if early/mid game, do value agent
 
         # if late game, do ab
-
+        # also check if the thingy chooses to pass, and if so do a different move
     def __str__(self):
         """
         Description of agent (Greedy + heuristic/search problem used)
