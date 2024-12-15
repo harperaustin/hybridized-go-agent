@@ -1040,6 +1040,8 @@ class HybridAgent(GameAgent):
             time_limit (float): time limit for agent to return a move
         """
 
+
+
         # ADD TIME CONSTRAINT:
         board = game_state.get_board()
         curr_player = game_state.player_to_move()
@@ -1076,7 +1078,6 @@ class HybridAgent(GameAgent):
                 return 12 
             
             if num_pieces == 1:
-                #print(convert_board(game_state))
                 # if the center point is empty, play there
                 # let's try adding further moves and see if it helps
                 if board[2][2][2] == 1:
@@ -1277,10 +1278,7 @@ class HybridAgent(GameAgent):
             return get_move_value()
         else:
             return get_move_ab()
-        # if early/mid game, do value agent
-
-        # if late game, do ab
-        # also check if the thingy chooses to pass, and if so do a different move
+        
     def __str__(self):
         """
         Description of agent (Greedy + heuristic/search problem used)
@@ -1302,8 +1300,8 @@ def main():
     from game_runner import run_many
     agent1 = get_final_agent_5x5()
     #agent1 = create_value_agent_from_model()
-    agent2 = create_value_agent_from_model()
-    #agent2 = AlphaBetaAgent(depth=2)
+    #agent2 = create_policy_agent_from_model()
+    agent2 = MCTSAgent()
     
     # Play 10 games
     run_many(agent1, agent2, 20)
