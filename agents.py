@@ -1282,13 +1282,21 @@ class HybridAgent(GameAgent):
         Description of agent (Greedy + heuristic/search problem used)
         """
         return "Hybrid Agent + " + str(self.search_problem)
+    
+def get_final_agent_5x5():
+    return HybridAgent(depth=2)
+
+def get_final_agent_9x9():
+    raise NotImplementedError
+
+
 
     
     
 
 def main():
     from game_runner import run_many
-    agent1 = HybridAgent(depth=2)
+    agent1 = get_final_agent_5x5()
     #agent1 = create_value_agent_from_model()
     agent2 = create_value_agent_from_model()
     #agent2 = AlphaBetaAgent(depth=2)
